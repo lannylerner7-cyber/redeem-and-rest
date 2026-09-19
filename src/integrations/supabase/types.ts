@@ -1072,7 +1072,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       card_type: "physical" | "ecode"
-      otp_purpose: "signup" | "login" | "reset"
+      otp_purpose: "signup" | "login" | "reset" | "pin"
       trade_status:
         | "pending"
         | "successful"
@@ -1210,7 +1210,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       card_type: ["physical", "ecode"],
-      otp_purpose: ["signup", "login", "reset"],
+      otp_purpose: ["signup", "login", "reset", "pin"],
       trade_status: [
         "pending",
         "successful",
