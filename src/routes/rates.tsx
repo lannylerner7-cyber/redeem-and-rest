@@ -117,13 +117,13 @@ function Rates() {
                       {r.gift_card_brands?.name}
                     </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3">
+                  <td className="text-muted-foreground border-border/60 group-hover:bg-surface border-b px-4 py-3 whitespace-nowrap">
                     {r.gift_card_regions?.name} ({r.gift_card_regions?.code})
                   </td>
-                  <td className="text-muted-foreground px-4 py-3">
+                  <td className="text-muted-foreground border-border/60 group-hover:bg-surface border-b px-4 py-3 whitespace-nowrap">
                     {r.card_type === "physical" ? "Physical" : "E-code"}
                   </td>
-                  <td className="text-money px-4 py-3 text-right font-bold">
+                  <td className="text-money border-border/60 group-hover:bg-surface border-b px-4 py-3 text-right font-bold whitespace-nowrap">
                     {naira(r.rate_naira)}
                   </td>
                 </tr>
