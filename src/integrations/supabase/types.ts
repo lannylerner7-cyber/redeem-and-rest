@@ -837,6 +837,7 @@ export type Database = {
         Args: { p_amount: number; p_note: string; p_user_id: string }
         Returns: number
       }
+      admin_platform_stats: { Args: never; Returns: Json }
       admin_review_trade: {
         Args: {
           p_note?: string
@@ -914,6 +915,46 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      create_trade: {
+        Args: {
+          p_ecode?: string
+          p_ecode_pin?: string
+          p_face_value: number
+          p_note?: string
+          p_variant_id: string
+        }
+        Returns: {
+          admin_note: string | null
+          brand_id: string | null
+          brand_name: string
+          card_type: Database["public"]["Enums"]["card_type"]
+          created_at: string
+          currency: string
+          ecode: string | null
+          ecode_pin: string | null
+          expected_payout: number
+          face_value: number
+          flagged_duplicate: boolean
+          id: string
+          paid_amount: number
+          rate_at_submit: number
+          region_code: string
+          region_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["trade_status"]
+          updated_at: string
+          user_id: string
+          user_note: string | null
+          variant_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "trades"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_withdrawal: {
         Args: { p_amount: number; p_bank_account_id: string }
