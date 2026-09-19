@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const purposeSchema = z.enum(["signup", "login", "reset"]);
+const purposeSchema = z.enum(["signup", "login", "reset", "pin"]);
+export type OtpPurpose = z.infer<typeof purposeSchema>;
 
 async function sha256(input: string) {
   const bytes = new TextEncoder().encode(input);
@@ -15,19 +16,19 @@ function sixDigits() {
   return String(crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000).padStart(6, "0");
 }
 
-const OTP_TTL_MIN = 10;
+export const OTP_TTL_MIN = 5;
 const RESEND_COOLDOWN_S = 60;
 const MAX_RESENDS_PER_HOUR = 5;
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 3;
 
 /** Issue a fresh code, invalidating any previous unused one. */
 export const requestOtp = createServerFn({ method: "POST" })
-  .inputValidator((d: { email: string; purpose: "signup" | "login" | "reset" }) =>
+  .inputValidator((d: { email: string; purpose: OtpPurpose }) =>
     z.object({ email: z.string().email(), purpose: purposeSchema }).parse(d),
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendEmail, otpEmailHtml, emailConfigured } = await import("./email.server");
+    const { sendEmail, otpEmail, emailConfigured } = await import("./email.server");
     const email = data.email.trim().toLowerCase();
     const now = new Date();
 
@@ -73,12 +74,12 @@ export const requestOtp = createServerFn({ method: "POST" })
       resend_count: rows.length,
     });
 
-    const label =
-      data.purpose === "signup" ? "sign-up" : data.purpose === "login" ? "login" : "password reset";
+    const mail = otpEmail(code, data.purpose, OTP_TTL_MIN);
     const result = await sendEmail({
       to: email,
-      subject: `Your ScousGiftCardExchange ${label} code`,
-      html: otpEmailHtml(code, label),
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
     });
 
     return {
@@ -86,12 +87,13 @@ export const requestOtp = createServerFn({ method: "POST" })
       delivered: result.sent,
       emailConfigured: emailConfigured(),
       expiresAt: expires.toISOString(),
+      ttlMinutes: OTP_TTL_MIN,
     };
   });
 
 /** Check a code and, when valid, mark the account verified. */
 export const verifyOtpCode = createServerFn({ method: "POST" })
-  .inputValidator((d: { email: string; purpose: "signup" | "login" | "reset"; code: string }) =>
+  .inputValidator((d: { email: string; purpose: OtpPurpose; code: string }) =>
     z
       .object({
         email: z.string().email(),
@@ -121,11 +123,17 @@ export const verifyOtpCode = createServerFn({ method: "POST" })
 
     const hash = await sha256(`${email}:${data.code}`);
     if (hash !== row.code_hash) {
-      await supabaseAdmin
-        .from("otp_codes")
-        .update({ attempts: (row.attempts as number) + 1 })
-        .eq("id", row.id as string);
-      return { ok: false as const, error: "wrong" };
+      const attempts = (row.attempts as number) + 1;
+      await supabaseAdmin.from("otp_codes").update({ attempts }).eq("id", row.id as string);
+      if (attempts >= MAX_ATTEMPTS) {
+        // Burn the code after three wrong tries so a new one has to be sent.
+        await supabaseAdmin
+          .from("otp_codes")
+          .update({ consumed_at: new Date().toISOString() })
+          .eq("id", row.id as string);
+        return { ok: false as const, error: "attempts" };
+      }
+      return { ok: false as const, error: "wrong", remaining: MAX_ATTEMPTS - attempts };
     }
 
     await supabaseAdmin
@@ -213,19 +221,16 @@ export const completeSignup = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendEmail, welcomeEmailHtml, emailConfigured } = await import("./email.server");
+    const { sendEmail, welcomeEmail, emailConfigured } = await import("./email.server");
     const email = data.email.trim().toLowerCase();
 
     if (!emailConfigured()) {
-      // No sending domain connected yet: don't lock people out of their account.
+      // No mail account connected yet: don't lock people out of their own account.
       await supabaseAdmin.from("profiles").update({ is_verified: true }).eq("email", email);
       return { verifiedWithoutEmail: true as const };
     }
 
-    await sendEmail({
-      to: email,
-      subject: "Welcome to ScousGiftCardExchange",
-      html: welcomeEmailHtml(data.fullName),
-    });
+    const mail = welcomeEmail(data.fullName);
+    await sendEmail({ to: email, subject: mail.subject, html: mail.html, text: mail.text });
     return { verifiedWithoutEmail: false as const };
   });
