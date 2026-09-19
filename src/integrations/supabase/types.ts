@@ -47,6 +47,30 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          alert_emails: string[]
+          from_name: string
+          id: boolean
+          reply_to: string | null
+          updated_at: string
+        }
+        Insert: {
+          alert_emails?: string[]
+          from_name?: string
+          id?: boolean
+          reply_to?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alert_emails?: string[]
+          from_name?: string
+          id?: boolean
+          reply_to?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bank_accounts: {
         Row: {
           account_name: string
@@ -238,6 +262,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          read_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          read_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          read_at?: string | null
+        }
+        Relationships: []
       }
       gift_card_brands: {
         Row: {
@@ -465,14 +516,19 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           email: string
+          frozen_at: string | null
+          frozen_reason: string | null
           full_name: string
           hide_balance_default: boolean
           id: string
           is_verified: boolean
           phone: string | null
+          pin_attempts: number
+          pin_locked_until: string | null
           push_enabled: boolean
           sound_enabled: boolean
           updated_at: string
+          withdrawal_pin_hash: string | null
         }
         Insert: {
           admin_code?: string | null
@@ -480,14 +536,19 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email: string
+          frozen_at?: string | null
+          frozen_reason?: string | null
           full_name?: string
           hide_balance_default?: boolean
           id: string
           is_verified?: boolean
           phone?: string | null
+          pin_attempts?: number
+          pin_locked_until?: string | null
           push_enabled?: boolean
           sound_enabled?: boolean
           updated_at?: string
+          withdrawal_pin_hash?: string | null
         }
         Update: {
           admin_code?: string | null
@@ -495,14 +556,19 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string
+          frozen_at?: string | null
+          frozen_reason?: string | null
           full_name?: string
           hide_balance_default?: boolean
           id?: string
           is_verified?: boolean
           phone?: string | null
+          pin_attempts?: number
+          pin_locked_until?: string | null
           push_enabled?: boolean
           sound_enabled?: boolean
           updated_at?: string
+          withdrawal_pin_hash?: string | null
         }
         Relationships: []
       }
@@ -877,6 +943,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_frozen: {
+        Args: { p_frozen: boolean; p_reason?: string; p_user_id: string }
+        Returns: boolean
+      }
       admin_withdrawal_decision: {
         Args: {
           p_id: string
@@ -957,7 +1027,7 @@ export type Database = {
         }
       }
       create_withdrawal: {
-        Args: { p_amount: number; p_bank_account_id: string }
+        Args: { p_amount: number; p_bank_account_id: string; p_pin: string }
         Returns: {
           admin_note: string | null
           amount: number
@@ -980,6 +1050,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      force_set_withdrawal_pin: {
+        Args: { p_pin: string; p_user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -988,6 +1062,12 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      pin_hash: { Args: { p_pin: string; p_user_id: string }; Returns: string }
+      set_withdrawal_pin: {
+        Args: { p_current_pin?: string; p_pin: string }
+        Returns: boolean
+      }
+      withdrawal_pin_status: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
