@@ -52,6 +52,7 @@ export type Database = {
           account_name: string
           account_number: string
           bank_code: string | null
+          bank_id: string | null
           bank_name: string
           created_at: string
           id: string
@@ -62,6 +63,7 @@ export type Database = {
           account_name: string
           account_number: string
           bank_code?: string | null
+          bank_id?: string | null
           bank_name: string
           created_at?: string
           id?: string
@@ -72,11 +74,50 @@ export type Database = {
           account_name?: string
           account_number?: string
           bank_code?: string | null
+          bank_id?: string | null
           bank_name?: string
           created_at?: string
           id?: string
           is_default?: boolean
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "banks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      banks: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          is_digital: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_digital?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_digital?: boolean
+          name?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -548,6 +589,7 @@ export type Database = {
           ecode_pin: string | null
           expected_payout: number
           face_value: number
+          flagged_duplicate: boolean
           id: string
           paid_amount: number
           rate_at_submit: number
@@ -558,6 +600,7 @@ export type Database = {
           status: Database["public"]["Enums"]["trade_status"]
           updated_at: string
           user_id: string
+          user_note: string | null
           variant_id: string | null
         }
         Insert: {
@@ -571,6 +614,7 @@ export type Database = {
           ecode_pin?: string | null
           expected_payout: number
           face_value: number
+          flagged_duplicate?: boolean
           id?: string
           paid_amount?: number
           rate_at_submit: number
@@ -581,6 +625,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["trade_status"]
           updated_at?: string
           user_id: string
+          user_note?: string | null
           variant_id?: string | null
         }
         Update: {
@@ -594,6 +639,7 @@ export type Database = {
           ecode_pin?: string | null
           expected_payout?: number
           face_value?: number
+          flagged_duplicate?: boolean
           id?: string
           paid_amount?: number
           rate_at_submit?: number
@@ -604,6 +650,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["trade_status"]
           updated_at?: string
           user_id?: string
+          user_note?: string | null
           variant_id?: string | null
         }
         Relationships: [
@@ -786,6 +833,112 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_wallet: {
+        Args: { p_amount: number; p_note: string; p_user_id: string }
+        Returns: number
+      }
+      admin_review_trade: {
+        Args: {
+          p_note?: string
+          p_paid?: number
+          p_status: Database["public"]["Enums"]["trade_status"]
+          p_trade_id: string
+        }
+        Returns: {
+          admin_note: string | null
+          brand_id: string | null
+          brand_name: string
+          card_type: Database["public"]["Enums"]["card_type"]
+          created_at: string
+          currency: string
+          ecode: string | null
+          ecode_pin: string | null
+          expected_payout: number
+          face_value: number
+          flagged_duplicate: boolean
+          id: string
+          paid_amount: number
+          rate_at_submit: number
+          region_code: string
+          region_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["trade_status"]
+          updated_at: string
+          user_id: string
+          user_note: string | null
+          variant_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "trades"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_withdrawal_decision: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_status: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Returns: {
+          admin_note: string | null
+          amount: number
+          bank_account_id: string | null
+          bank_snapshot: Json | null
+          created_at: string
+          fee: number
+          id: string
+          net_amount: number
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      apply_wallet_change: {
+        Args: {
+          p_amount: number
+          p_note: string
+          p_reference_id: string
+          p_reference_type: string
+          p_type: Database["public"]["Enums"]["wallet_txn_type"]
+          p_user_id: string
+        }
+        Returns: number
+      }
+      create_withdrawal: {
+        Args: { p_amount: number; p_bank_account_id: string }
+        Returns: {
+          admin_note: string | null
+          amount: number
+          bank_account_id: string | null
+          bank_snapshot: Json | null
+          created_at: string
+          fee: number
+          id: string
+          net_amount: number
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
