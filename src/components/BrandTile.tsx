@@ -42,6 +42,7 @@ export function BrandLogo({
           src={brand.logo_url}
           alt={`${brand.name} logo`}
           loading="lazy"
+          referrerPolicy="no-referrer"
           width={28}
           height={28}
           className="h-[60%] w-[60%] object-contain"

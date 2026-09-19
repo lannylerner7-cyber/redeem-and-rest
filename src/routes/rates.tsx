@@ -80,14 +80,22 @@ function Rates() {
           className="border-border bg-surface placeholder:text-muted-foreground focus:border-primary mt-6 w-full rounded-full border px-5 py-3 text-sm outline-none"
         />
 
-        <div className="border-border/70 mt-6 overflow-hidden rounded-2xl border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface-2 text-muted-foreground text-xs uppercase">
+        <div className="border-border/70 mt-6 max-h-[70vh] overflow-auto overscroll-contain rounded-2xl border">
+          <table className="w-full min-w-[34rem] border-separate border-spacing-0 text-left text-sm">
+            <thead className="text-muted-foreground text-xs uppercase">
               <tr>
-                <th className="px-4 py-3">Brand</th>
-                <th className="px-4 py-3">Region</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3 text-right">Rate</th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 left-0 z-30 border-b px-4 py-3">
+                  Brand
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3">
+                  Region
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3">
+                  Type
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3 text-right">
+                  Rate
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -100,8 +108,8 @@ function Rates() {
                   </tr>
                 ))}
               {rows.map((r) => (
-                <tr key={r.id} className="border-border/60 hover:bg-surface border-t">
-                  <td className="px-4 py-3 font-semibold">
+                <tr key={r.id} className="group">
+                  <td className="bg-background group-hover:bg-surface border-border/60 sticky left-0 z-10 border-b px-4 py-3 font-semibold">
                     <span className="flex items-center gap-2">
                       {r.gift_card_brands && (
                         <BrandLogo brand={r.gift_card_brands} className="h-7 w-7 shrink-0" />
@@ -109,13 +117,13 @@ function Rates() {
                       {r.gift_card_brands?.name}
                     </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3">
+                  <td className="text-muted-foreground border-border/60 group-hover:bg-surface border-b px-4 py-3 whitespace-nowrap">
                     {r.gift_card_regions?.name} ({r.gift_card_regions?.code})
                   </td>
-                  <td className="text-muted-foreground px-4 py-3">
+                  <td className="text-muted-foreground border-border/60 group-hover:bg-surface border-b px-4 py-3 whitespace-nowrap">
                     {r.card_type === "physical" ? "Physical" : "E-code"}
                   </td>
-                  <td className="text-money px-4 py-3 text-right font-bold">
+                  <td className="text-money border-border/60 group-hover:bg-surface border-b px-4 py-3 text-right font-bold whitespace-nowrap">
                     {naira(r.rate_naira)}
                   </td>
                 </tr>
