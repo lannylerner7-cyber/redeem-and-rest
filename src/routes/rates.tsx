@@ -108,8 +108,8 @@ function Rates() {
                   </tr>
                 ))}
               {rows.map((r) => (
-                <tr key={r.id} className="border-border/60 hover:bg-surface border-t">
-                  <td className="px-4 py-3 font-semibold">
+                <tr key={r.id} className="group">
+                  <td className="bg-background group-hover:bg-surface border-border/60 sticky left-0 z-10 border-b px-4 py-3 font-semibold">
                     <span className="flex items-center gap-2">
                       {r.gift_card_brands && (
                         <BrandLogo brand={r.gift_card_brands} className="h-7 w-7 shrink-0" />
