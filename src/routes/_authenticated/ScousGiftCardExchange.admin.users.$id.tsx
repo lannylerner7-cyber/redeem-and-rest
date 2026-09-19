@@ -1,0 +1,205 @@
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+
+import { supabase } from "@/integrations/supabase/client";
+import { naira, shortDate, TRADE_STATUS_LABEL } from "@/lib/format";
+
+export const Route = createFileRoute("/_authenticated/ScousGiftCardExchange/admin/users/$id")({
+  component: AdminUserDetail,
+});
+
+function AdminUserDetail() {
+  const { id } = useParams({ from: "/_authenticated/ScousGiftCardExchange/admin/users/$id" });
+  const qc = useQueryClient();
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+
+  const profile = useQuery({
+    queryKey: ["admin-user", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone, created_at")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const wallet = useQuery({
+    queryKey: ["admin-user-wallet", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("balance_naira, held_naira")
+        .eq("user_id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const banks = useQuery({
+    queryKey: ["admin-user-banks", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bank_accounts")
+        .select("id, bank_name, account_number, account_name, is_default")
+        .eq("user_id", id);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const trades = useQuery({
+    queryKey: ["admin-user-trades", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("trades")
+        .select("id, brand_name, region_code, currency, face_value, expected_payout, paid_amount, status, created_at")
+        .eq("user_id", id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const txns = useQuery({
+    queryKey: ["admin-user-txns", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallet_transactions")
+        .select("id, type, amount, balance_after, note, created_at")
+        .eq("user_id", id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const adjust = useMutation({
+    mutationFn: async (sign: 1 | -1) => {
+      const value = Number(amount || 0) * sign;
+      if (!value) throw new Error("Enter an amount");
+      const { error } = await supabase.rpc("admin_adjust_wallet", {
+        p_user_id: id,
+        p_amount: value,
+        p_note: note || "Manual adjustment",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Wallet updated");
+      setAmount("");
+      setNote("");
+      void qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-5">
+      <Link
+        to="/ScousGiftCardExchange/admin/users"
+        className="text-muted-foreground flex items-center gap-2 text-sm"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to users
+      </Link>
+
+      <section className="border-border/70 bg-night-gradient rounded-3xl border p-6">
+        <p className="font-display text-lg font-bold">{profile.data?.full_name}</p>
+        <p className="text-muted-foreground text-xs">{profile.data?.email}</p>
+        <p className="font-display text-money mt-4 text-3xl font-extrabold">
+          {naira(wallet.data?.balance_naira ?? 0)}
+        </p>
+      </section>
+
+      <section className="border-border/70 bg-surface space-y-3 rounded-2xl border p-4">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Manual adjustment</p>
+        <input
+          inputMode="numeric"
+          placeholder="Amount ₦"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ""))}
+          className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+        />
+        <input
+          placeholder="Reason"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => adjust.mutate(1)}
+            className="bg-money-gradient text-background rounded-full py-2.5 text-xs font-bold"
+          >
+            Credit
+          </button>
+          <button
+            type="button"
+            onClick={() => adjust.mutate(-1)}
+            className="border-destructive/50 text-destructive rounded-full border py-2.5 text-xs font-bold"
+          >
+            Debit
+          </button>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Bank accounts</p>
+        {(banks.data ?? []).map((b) => (
+          <div key={b.id} className="border-border/70 bg-surface rounded-2xl border p-4 text-sm">
+            {b.bank_name} · {b.account_number} · {b.account_name}
+          </div>
+        ))}
+        {(banks.data ?? []).length === 0 && (
+          <p className="text-muted-foreground text-sm">No bank saved.</p>
+        )}
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Trades</p>
+        {(trades.data ?? []).map((t) => (
+          <Link
+            key={t.id}
+            to="/ScousGiftCardExchange/admin/trades/$id"
+            params={{ id: t.id }}
+            className="border-border/70 bg-surface flex items-center justify-between rounded-2xl border p-4"
+          >
+            <span className="text-sm">
+              {t.brand_name} · {t.currency} {t.face_value}
+            </span>
+            <span className="text-muted-foreground text-xs">
+              {TRADE_STATUS_LABEL[t.status] ?? t.status} · {shortDate(t.created_at)}
+            </span>
+          </Link>
+        ))}
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Wallet activity</p>
+        {(txns.data ?? []).map((x) => (
+          <div
+            key={x.id}
+            className="border-border/70 bg-surface flex items-center justify-between rounded-2xl border p-4"
+          >
+            <span className="text-sm">
+              {x.type} · {x.note}
+            </span>
+            <span className="text-muted-foreground text-xs">
+              {naira(x.amount)} → {naira(x.balance_after)}
+            </span>
+          </div>
+        ))}
+      </section>
+    </div>
+  );
+}
