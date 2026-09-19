@@ -109,9 +109,9 @@ function TradePage() {
       const { data, error } = await supabase.rpc("create_trade", {
         p_variant_id: variant.id,
         p_face_value: value,
-        p_ecode: cardType === "ecode" ? ecode : undefined,
-        p_ecode_pin: cardType === "ecode" ? pin : undefined,
-        p_note: note || undefined,
+        ...(cardType === "ecode" && ecode ? { p_ecode: ecode } : {}),
+        ...(cardType === "ecode" && pin ? { p_ecode_pin: pin } : {}),
+        ...(note ? { p_note: note } : {}),
       });
       if (error) throw error;
       const trade = data as unknown as { id: string; user_id: string };

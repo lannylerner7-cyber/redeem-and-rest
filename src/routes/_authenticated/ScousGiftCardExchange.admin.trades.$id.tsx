@@ -64,8 +64,8 @@ function AdminTradeDetail() {
       const { error } = await supabase.rpc("admin_review_trade", {
         p_trade_id: id,
         p_status: status,
-        p_paid: status === "partially_paid" ? Number(partial || 0) : undefined,
-        p_note: note || undefined,
+        ...(status === "partially_paid" ? { p_paid: Number(partial || 0) } : {}),
+        ...(note ? { p_note: note } : {}),
       });
       if (error) throw error;
     },
