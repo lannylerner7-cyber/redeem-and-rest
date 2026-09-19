@@ -80,14 +80,22 @@ function Rates() {
           className="border-border bg-surface placeholder:text-muted-foreground focus:border-primary mt-6 w-full rounded-full border px-5 py-3 text-sm outline-none"
         />
 
-        <div className="border-border/70 mt-6 overflow-hidden rounded-2xl border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface-2 text-muted-foreground text-xs uppercase">
+        <div className="border-border/70 mt-6 max-h-[70vh] overflow-auto overscroll-contain rounded-2xl border">
+          <table className="w-full min-w-[34rem] border-separate border-spacing-0 text-left text-sm">
+            <thead className="text-muted-foreground text-xs uppercase">
               <tr>
-                <th className="px-4 py-3">Brand</th>
-                <th className="px-4 py-3">Region</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3 text-right">Rate</th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 left-0 z-30 border-b px-4 py-3">
+                  Brand
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3">
+                  Region
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3">
+                  Type
+                </th>
+                <th className="bg-surface-2 border-border/60 sticky top-0 z-20 border-b px-4 py-3 text-right">
+                  Rate
+                </th>
               </tr>
             </thead>
             <tbody>
