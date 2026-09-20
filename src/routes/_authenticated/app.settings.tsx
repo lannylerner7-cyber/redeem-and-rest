@@ -215,6 +215,105 @@ function Settings() {
         )}
       </section>
 
+      {pinStatus.data?.frozen && (
+        <p className="border-destructive/40 bg-destructive/10 text-destructive rounded-2xl border px-4 py-3 text-sm">
+          Your account is frozen. {pinStatus.data.frozen_reason ?? "Contact support for details."}
+        </p>
+      )}
+
+      <section className="border-border/70 bg-surface space-y-3 rounded-2xl border p-5">
+        <div className="flex items-center gap-2">
+          <Lock className="text-primary h-4 w-4" />
+          <p className="text-sm font-semibold">
+            {pinStatus.data?.has_pin ? "Change withdrawal PIN" : "Set withdrawal PIN"}
+          </p>
+        </div>
+        <p className="text-muted-foreground text-xs">
+          You'll be asked for this 4-digit PIN every time you request a withdrawal.
+        </p>
+
+        {resetting ? (
+          <>
+            <input
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="6-digit code from your email"
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <input
+              inputMode="numeric"
+              type="password"
+              maxLength={4}
+              placeholder="New 4-digit PIN"
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <button
+              type="button"
+              disabled={finishReset.isPending || resetCode.length !== 6 || newPin.length !== 4}
+              onClick={() => finishReset.mutate()}
+              className="bg-gold-gradient text-primary-foreground flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold disabled:opacity-50"
+            >
+              {finishReset.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save new PIN
+            </button>
+            <button
+              type="button"
+              onClick={() => setResetting(false)}
+              className="text-muted-foreground w-full text-center text-xs"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            {pinStatus.data?.has_pin && (
+              <input
+                inputMode="numeric"
+                type="password"
+                maxLength={4}
+                placeholder="Current PIN"
+                value={currentPin}
+                onChange={(e) => setCurrentPin(e.target.value.replace(/[^\d]/g, ""))}
+                className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+              />
+            )}
+            <input
+              inputMode="numeric"
+              type="password"
+              maxLength={4}
+              placeholder={pinStatus.data?.has_pin ? "New 4-digit PIN" : "Choose a 4-digit PIN"}
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <button
+              type="button"
+              disabled={savePin.isPending || newPin.length !== 4}
+              onClick={() => savePin.mutate()}
+              className="bg-gold-gradient text-primary-foreground flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold disabled:opacity-50"
+            >
+              {savePin.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save PIN
+            </button>
+            {pinStatus.data?.has_pin && (
+              <button
+                type="button"
+                disabled={startReset.isPending}
+                onClick={() => startReset.mutate()}
+                className="text-primary w-full text-center text-xs font-semibold"
+              >
+                Forgot my PIN — email me a code
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
+
       {isAdmin && (
         <a
           href="/ScousGiftCardExchange/admin"
