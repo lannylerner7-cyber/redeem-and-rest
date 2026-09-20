@@ -1,17 +1,26 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Loader2, LogOut, Plus, Shield, Star, Trash2 } from "lucide-react";
+import { Loader2, Lock, LogOut, Plus, Shield, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSession } from "@/hooks/useAuth";
+import { requestOtp } from "@/lib/auth.functions";
+import { resetWithdrawalPin } from "@/lib/pin.functions";
 import { soundEnabled, setSoundEnabled } from "@/lib/sounds";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/app/settings")({
   component: Settings,
 });
+
+type PinStatus = {
+  has_pin: boolean;
+  locked_until: string | null;
+  frozen: boolean;
+  frozen_reason: string | null;
+};
 
 function Settings() {
   const navigate = useNavigate();
@@ -24,6 +33,10 @@ function Settings() {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [sound, setSound] = useState(() => soundEnabled());
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [resetCode, setResetCode] = useState("");
 
   const profile = useQuery({
     queryKey: ["profile"],
