@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,21 +9,39 @@ const ERRORS: Record<string, string> = {
   no_code: "That code has expired. Send a new one.",
   expired: "That code has expired. Send a new one.",
   attempts: "Too many wrong tries. Send a new code.",
-  wrong: "That code isn't right. Check and try again.",
+  wrong: "Invalid OTP — check the code and try again.",
 };
+
+function clock(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 export function OtpForm({
   email,
   purpose,
+  expiresAt,
   onVerified,
 }: {
   email: string;
-  purpose: "signup" | "login" | "reset";
+  purpose: "signup" | "login" | "reset" | "pin";
+  expiresAt?: string | null;
   onVerified: () => void;
 }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(45);
+  const [deadline, setDeadline] = useState<number | null>(
+    expiresAt ? new Date(expiresAt).getTime() : null,
+  );
+  const [now, setNow] = useState(() => Date.now());
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -31,13 +49,22 @@ export function OtpForm({
     return () => window.clearTimeout(t);
   }, [cooldown]);
 
+  const left = useMemo(
+    () => (deadline ? Math.max(0, Math.round((deadline - now) / 1000)) : null),
+    [deadline, now],
+  );
+  const expired = left !== null && left === 0;
+
   async function submit(value: string) {
     setBusy(true);
+    setError(null);
     const res = await verifyOtpCode({ data: { email, purpose, code: value } });
     setBusy(false);
     if (!res.ok) {
       setCode("");
-      toast.error(ERRORS[res.error] ?? "Couldn't verify that code.");
+      const message = ERRORS[res.error] ?? "Couldn't verify that code.";
+      setError(message);
+      toast.error(message);
       return;
     }
     onVerified();
@@ -45,6 +72,7 @@ export function OtpForm({
 
   async function resend() {
     setBusy(true);
+    setError(null);
     const res = await requestOtp({ data: { email, purpose } });
     setBusy(false);
     if (!res.ok) {
@@ -57,6 +85,8 @@ export function OtpForm({
       return;
     }
     setCooldown(60);
+    setCode("");
+    setDeadline(new Date(res.expiresAt).getTime());
     toast.success("New code sent.");
   }
 
@@ -66,8 +96,10 @@ export function OtpForm({
         <InputOTP
           maxLength={6}
           value={code}
+          disabled={expired}
           onChange={(v) => {
             setCode(v);
+            setError(null);
             if (v.length === 6) void submit(v);
           }}
         >
@@ -78,6 +110,24 @@ export function OtpForm({
           </InputOTPGroup>
         </InputOTP>
       </div>
+
+      {left !== null && (
+        <p
+          className={
+            expired
+              ? "text-destructive text-center text-sm font-semibold"
+              : "text-muted-foreground text-center text-sm"
+          }
+        >
+          {expired ? "This code has expired — send a new one." : `Code expires in ${clock(left)}`}
+        </p>
+      )}
+
+      {error && !expired && (
+        <p className="border-destructive/40 bg-destructive/10 text-destructive rounded-xl border px-4 py-3 text-center text-sm">
+          {error}
+        </p>
+      )}
 
       {busy && (
         <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
