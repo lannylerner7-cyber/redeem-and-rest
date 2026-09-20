@@ -101,3 +101,11 @@ Status key: [ ] not started · [~] in progress · [x] done
 - Referrals — not scheduled yet
 - Canva exports — swap in when ready
 - MongoDB is not usable on this runtime; backend is Lovable Cloud (Postgres)
+
+## Phase 10 — Requested 20 Sep
+
+- [ ] Welcome bonus: ₦5,000 on signup, locked until the member's first successful trade
+- [ ] Referrals: ₦2,000 to both sides, locked until each side trades
+- [ ] Locked (non-withdrawable) balance shown separately in wallet and admin
+- [ ] Cloudflare: D1 database + Images — see note below
+- [ ] .env / secrets fully populated: SMTP + sender identity
