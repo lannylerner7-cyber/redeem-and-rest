@@ -133,6 +133,69 @@ function Settings() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const pinStatus = useQuery({
+    queryKey: ["pin-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("withdrawal_pin_status");
+      if (error) throw error;
+      return data as unknown as PinStatus;
+    },
+  });
+
+  const savePin = useMutation({
+    mutationFn: async () => {
+      if (!/^\d{4}$/.test(newPin)) throw new Error("PIN must be 4 digits");
+      const { error } = await supabase.rpc("set_withdrawal_pin", {
+        p_pin: newPin,
+        ...(pinStatus.data?.has_pin ? { p_current_pin: currentPin } : {}),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Withdrawal PIN saved");
+      setNewPin("");
+      setCurrentPin("");
+      void qc.invalidateQueries({ queryKey: ["pin-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const startReset = useMutation({
+    mutationFn: async () => {
+      const email = profile.data?.email;
+      if (!email) throw new Error("No email on file");
+      const res = await requestOtp({ data: { email, purpose: "pin" } });
+      if (!res.ok) throw new Error("Please wait a moment before asking for another code");
+    },
+    onSuccess: () => {
+      setResetting(true);
+      toast.success("We sent a code to your email");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const finishReset = useMutation({
+    mutationFn: async () => {
+      const res = await resetWithdrawalPin({ data: { code: resetCode, pin: newPin } });
+      if (!res.ok) {
+        throw new Error(
+          res.error === "wrong"
+            ? "Invalid OTP — check the code and try again."
+            : "That code has expired. Send a new one.",
+        );
+      }
+    },
+    onSuccess: () => {
+      toast.success("Withdrawal PIN updated");
+      setResetting(false);
+      setResetCode("");
+      setNewPin("");
+      void qc.invalidateQueries({ queryKey: ["pin-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
