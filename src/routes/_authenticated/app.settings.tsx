@@ -1,17 +1,26 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Loader2, LogOut, Plus, Shield, Star, Trash2 } from "lucide-react";
+import { Loader2, Lock, LogOut, Plus, Shield, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSession } from "@/hooks/useAuth";
+import { requestOtp } from "@/lib/auth.functions";
+import { resetWithdrawalPin } from "@/lib/pin.functions";
 import { soundEnabled, setSoundEnabled } from "@/lib/sounds";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/app/settings")({
   component: Settings,
 });
+
+type PinStatus = {
+  has_pin: boolean;
+  locked_until: string | null;
+  frozen: boolean;
+  frozen_reason: string | null;
+};
 
 function Settings() {
   const navigate = useNavigate();
@@ -24,6 +33,10 @@ function Settings() {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [sound, setSound] = useState(() => soundEnabled());
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [resetCode, setResetCode] = useState("");
 
   const profile = useQuery({
     queryKey: ["profile"],
@@ -120,6 +133,69 @@ function Settings() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const pinStatus = useQuery({
+    queryKey: ["pin-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("withdrawal_pin_status");
+      if (error) throw error;
+      return data as unknown as PinStatus;
+    },
+  });
+
+  const savePin = useMutation({
+    mutationFn: async () => {
+      if (!/^\d{4}$/.test(newPin)) throw new Error("PIN must be 4 digits");
+      const { error } = await supabase.rpc("set_withdrawal_pin", {
+        p_pin: newPin,
+        ...(pinStatus.data?.has_pin ? { p_current_pin: currentPin } : {}),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Withdrawal PIN saved");
+      setNewPin("");
+      setCurrentPin("");
+      void qc.invalidateQueries({ queryKey: ["pin-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const startReset = useMutation({
+    mutationFn: async () => {
+      const email = profile.data?.email;
+      if (!email) throw new Error("No email on file");
+      const res = await requestOtp({ data: { email, purpose: "pin" } });
+      if (!res.ok) throw new Error("Please wait a moment before asking for another code");
+    },
+    onSuccess: () => {
+      setResetting(true);
+      toast.success("We sent a code to your email");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const finishReset = useMutation({
+    mutationFn: async () => {
+      const res = await resetWithdrawalPin({ data: { code: resetCode, pin: newPin } });
+      if (!res.ok) {
+        throw new Error(
+          res.error === "wrong"
+            ? "Invalid OTP — check the code and try again."
+            : "That code has expired. Send a new one.",
+        );
+      }
+    },
+    onSuccess: () => {
+      toast.success("Withdrawal PIN updated");
+      setResetting(false);
+      setResetCode("");
+      setNewPin("");
+      void qc.invalidateQueries({ queryKey: ["pin-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
@@ -138,6 +214,105 @@ function Settings() {
           <p className="text-muted-foreground text-xs">{profile.data.phone}</p>
         )}
       </section>
+
+      {pinStatus.data?.frozen && (
+        <p className="border-destructive/40 bg-destructive/10 text-destructive rounded-2xl border px-4 py-3 text-sm">
+          Your account is frozen. {pinStatus.data.frozen_reason ?? "Contact support for details."}
+        </p>
+      )}
+
+      <section className="border-border/70 bg-surface space-y-3 rounded-2xl border p-5">
+        <div className="flex items-center gap-2">
+          <Lock className="text-primary h-4 w-4" />
+          <p className="text-sm font-semibold">
+            {pinStatus.data?.has_pin ? "Change withdrawal PIN" : "Set withdrawal PIN"}
+          </p>
+        </div>
+        <p className="text-muted-foreground text-xs">
+          You'll be asked for this 4-digit PIN every time you request a withdrawal.
+        </p>
+
+        {resetting ? (
+          <>
+            <input
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="6-digit code from your email"
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <input
+              inputMode="numeric"
+              type="password"
+              maxLength={4}
+              placeholder="New 4-digit PIN"
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <button
+              type="button"
+              disabled={finishReset.isPending || resetCode.length !== 6 || newPin.length !== 4}
+              onClick={() => finishReset.mutate()}
+              className="bg-gold-gradient text-primary-foreground flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold disabled:opacity-50"
+            >
+              {finishReset.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save new PIN
+            </button>
+            <button
+              type="button"
+              onClick={() => setResetting(false)}
+              className="text-muted-foreground w-full text-center text-xs"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            {pinStatus.data?.has_pin && (
+              <input
+                inputMode="numeric"
+                type="password"
+                maxLength={4}
+                placeholder="Current PIN"
+                value={currentPin}
+                onChange={(e) => setCurrentPin(e.target.value.replace(/[^\d]/g, ""))}
+                className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+              />
+            )}
+            <input
+              inputMode="numeric"
+              type="password"
+              maxLength={4}
+              placeholder={pinStatus.data?.has_pin ? "New 4-digit PIN" : "Choose a 4-digit PIN"}
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value.replace(/[^\d]/g, ""))}
+              className="border-border bg-surface-2 w-full rounded-xl border px-3 py-3 text-sm"
+            />
+            <button
+              type="button"
+              disabled={savePin.isPending || newPin.length !== 4}
+              onClick={() => savePin.mutate()}
+              className="bg-gold-gradient text-primary-foreground flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold disabled:opacity-50"
+            >
+              {savePin.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save PIN
+            </button>
+            {pinStatus.data?.has_pin && (
+              <button
+                type="button"
+                disabled={startReset.isPending}
+                onClick={() => startReset.mutate()}
+                className="text-primary w-full text-center text-xs font-semibold"
+              >
+                Forgot my PIN — email me a code
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
 
       {isAdmin && (
         <a
