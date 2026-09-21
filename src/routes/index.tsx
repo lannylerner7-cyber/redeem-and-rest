@@ -6,6 +6,7 @@ import { ArrowRight, BadgeCheck, ShieldCheck, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PublicHeader, PublicFooter } from "@/components/PublicHeader";
 import { BrandTile, BrandTileSkeleton, type BrandLike } from "@/components/BrandTile";
+import { ContactForm } from "@/components/ContactForm";
 import { naira } from "@/lib/format";
 import heroCards from "@/assets/hero-cards.jpg";
 
@@ -277,6 +278,10 @@ function Home() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section id="contact" className="mx-auto mt-16 max-w-2xl px-4">
+          <ContactForm />
         </section>
 
         <section className="mx-auto mt-16 max-w-4xl px-4">
