@@ -6,7 +6,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { OtpForm } from "@/components/OtpForm";
 
 export const Route = createFileRoute("/verify-email")({
-  validateSearch: z.object({ email: z.string().email().optional() }),
+  validateSearch: z.object({ email: z.string().email().optional(), exp: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Verify your email — ScousGiftCardExchange" },
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/verify-email")({
 });
 
 function VerifyEmail() {
-  const { email } = Route.useSearch();
+  const { email, exp } = Route.useSearch();
   const navigate = useNavigate();
 
   if (!email) {
@@ -42,6 +42,7 @@ function VerifyEmail() {
       <OtpForm
         email={email}
         purpose="signup"
+        expiresAt={exp ?? null}
         onVerified={() => {
           toast.success("Email verified. Welcome aboard!");
           void navigate({ to: "/app" });

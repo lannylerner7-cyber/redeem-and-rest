@@ -32,6 +32,8 @@ import { Route as AuthenticatedAppTradeRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
 import { Route as AuthenticatedScousGiftCardExchangeAdminIndexRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.index'
 import { Route as AuthenticatedScousGiftCardExchangeAdminAuditRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.audit'
+import { Route as AuthenticatedScousGiftCardExchangeAdminMailRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.mail'
+import { Route as AuthenticatedScousGiftCardExchangeAdminMessagesRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.messages'
 import { Route as AuthenticatedScousGiftCardExchangeAdminRatesRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.rates'
 import { Route as AuthenticatedScousGiftCardExchangeAdminTradesRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.trades'
 import { Route as AuthenticatedScousGiftCardExchangeAdminUsersRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin.users'
@@ -161,6 +163,18 @@ const AuthenticatedScousGiftCardExchangeAdminAuditRoute =
     path: '/audit',
     getParentRoute: () => AuthenticatedScousGiftCardExchangeAdminRoute,
   } as any)
+const AuthenticatedScousGiftCardExchangeAdminMailRoute =
+  AuthenticatedScousGiftCardExchangeAdminMailRouteImport.update({
+    id: '/mail',
+    path: '/mail',
+    getParentRoute: () => AuthenticatedScousGiftCardExchangeAdminRoute,
+  } as any)
+const AuthenticatedScousGiftCardExchangeAdminMessagesRoute =
+  AuthenticatedScousGiftCardExchangeAdminMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => AuthenticatedScousGiftCardExchangeAdminRoute,
+  } as any)
 const AuthenticatedScousGiftCardExchangeAdminRatesRoute =
   AuthenticatedScousGiftCardExchangeAdminRatesRouteImport.update({
     id: '/rates',
@@ -232,6 +246,8 @@ export interface FileRoutesByFullPath {
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/ScousGiftCardExchange/admin/audit': typeof AuthenticatedScousGiftCardExchangeAdminAuditRoute
+  '/ScousGiftCardExchange/admin/mail': typeof AuthenticatedScousGiftCardExchangeAdminMailRoute
+  '/ScousGiftCardExchange/admin/messages': typeof AuthenticatedScousGiftCardExchangeAdminMessagesRoute
   '/ScousGiftCardExchange/admin/rates': typeof AuthenticatedScousGiftCardExchangeAdminRatesRoute
   '/ScousGiftCardExchange/admin/trades': typeof AuthenticatedScousGiftCardExchangeAdminTradesRouteWithChildren
   '/ScousGiftCardExchange/admin/users': typeof AuthenticatedScousGiftCardExchangeAdminUsersRouteWithChildren
@@ -261,6 +277,8 @@ export interface FileRoutesByTo {
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/ScousGiftCardExchange/admin/audit': typeof AuthenticatedScousGiftCardExchangeAdminAuditRoute
+  '/ScousGiftCardExchange/admin/mail': typeof AuthenticatedScousGiftCardExchangeAdminMailRoute
+  '/ScousGiftCardExchange/admin/messages': typeof AuthenticatedScousGiftCardExchangeAdminMessagesRoute
   '/ScousGiftCardExchange/admin/rates': typeof AuthenticatedScousGiftCardExchangeAdminRatesRoute
   '/ScousGiftCardExchange/admin/trades': typeof AuthenticatedScousGiftCardExchangeAdminTradesRouteWithChildren
   '/ScousGiftCardExchange/admin/users': typeof AuthenticatedScousGiftCardExchangeAdminUsersRouteWithChildren
@@ -295,6 +313,8 @@ export interface FileRoutesById {
   '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/ScousGiftCardExchange/admin/audit': typeof AuthenticatedScousGiftCardExchangeAdminAuditRoute
+  '/_authenticated/ScousGiftCardExchange/admin/mail': typeof AuthenticatedScousGiftCardExchangeAdminMailRoute
+  '/_authenticated/ScousGiftCardExchange/admin/messages': typeof AuthenticatedScousGiftCardExchangeAdminMessagesRoute
   '/_authenticated/ScousGiftCardExchange/admin/rates': typeof AuthenticatedScousGiftCardExchangeAdminRatesRoute
   '/_authenticated/ScousGiftCardExchange/admin/trades': typeof AuthenticatedScousGiftCardExchangeAdminTradesRouteWithChildren
   '/_authenticated/ScousGiftCardExchange/admin/users': typeof AuthenticatedScousGiftCardExchangeAdminUsersRouteWithChildren
@@ -329,6 +349,8 @@ export interface FileRouteTypes {
     | '/app/withdraw'
     | '/app/'
     | '/ScousGiftCardExchange/admin/audit'
+    | '/ScousGiftCardExchange/admin/mail'
+    | '/ScousGiftCardExchange/admin/messages'
     | '/ScousGiftCardExchange/admin/rates'
     | '/ScousGiftCardExchange/admin/trades'
     | '/ScousGiftCardExchange/admin/users'
@@ -358,6 +380,8 @@ export interface FileRouteTypes {
     | '/app/withdraw'
     | '/app'
     | '/ScousGiftCardExchange/admin/audit'
+    | '/ScousGiftCardExchange/admin/mail'
+    | '/ScousGiftCardExchange/admin/messages'
     | '/ScousGiftCardExchange/admin/rates'
     | '/ScousGiftCardExchange/admin/trades'
     | '/ScousGiftCardExchange/admin/users'
@@ -391,6 +415,8 @@ export interface FileRouteTypes {
     | '/_authenticated/app/withdraw'
     | '/_authenticated/app/'
     | '/_authenticated/ScousGiftCardExchange/admin/audit'
+    | '/_authenticated/ScousGiftCardExchange/admin/mail'
+    | '/_authenticated/ScousGiftCardExchange/admin/messages'
     | '/_authenticated/ScousGiftCardExchange/admin/rates'
     | '/_authenticated/ScousGiftCardExchange/admin/trades'
     | '/_authenticated/ScousGiftCardExchange/admin/users'
@@ -579,6 +605,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScousGiftCardExchangeAdminAuditRouteImport
       parentRoute: typeof AuthenticatedScousGiftCardExchangeAdminRoute
     }
+    '/_authenticated/ScousGiftCardExchange/admin/mail': {
+      id: '/_authenticated/ScousGiftCardExchange/admin/mail'
+      path: '/mail'
+      fullPath: '/ScousGiftCardExchange/admin/mail'
+      preLoaderRoute: typeof AuthenticatedScousGiftCardExchangeAdminMailRouteImport
+      parentRoute: typeof AuthenticatedScousGiftCardExchangeAdminRoute
+    }
+    '/_authenticated/ScousGiftCardExchange/admin/messages': {
+      id: '/_authenticated/ScousGiftCardExchange/admin/messages'
+      path: '/messages'
+      fullPath: '/ScousGiftCardExchange/admin/messages'
+      preLoaderRoute: typeof AuthenticatedScousGiftCardExchangeAdminMessagesRouteImport
+      parentRoute: typeof AuthenticatedScousGiftCardExchangeAdminRoute
+    }
     '/_authenticated/ScousGiftCardExchange/admin/rates': {
       id: '/_authenticated/ScousGiftCardExchange/admin/rates'
       path: '/rates'
@@ -709,6 +749,8 @@ const AuthenticatedScousGiftCardExchangeAdminUsersRouteWithChildren =
 
 interface AuthenticatedScousGiftCardExchangeAdminRouteChildren {
   AuthenticatedScousGiftCardExchangeAdminAuditRoute: typeof AuthenticatedScousGiftCardExchangeAdminAuditRoute
+  AuthenticatedScousGiftCardExchangeAdminMailRoute: typeof AuthenticatedScousGiftCardExchangeAdminMailRoute
+  AuthenticatedScousGiftCardExchangeAdminMessagesRoute: typeof AuthenticatedScousGiftCardExchangeAdminMessagesRoute
   AuthenticatedScousGiftCardExchangeAdminRatesRoute: typeof AuthenticatedScousGiftCardExchangeAdminRatesRoute
   AuthenticatedScousGiftCardExchangeAdminTradesRoute: typeof AuthenticatedScousGiftCardExchangeAdminTradesRouteWithChildren
   AuthenticatedScousGiftCardExchangeAdminUsersRoute: typeof AuthenticatedScousGiftCardExchangeAdminUsersRouteWithChildren
@@ -720,6 +762,10 @@ const AuthenticatedScousGiftCardExchangeAdminRouteChildren: AuthenticatedScousGi
   {
     AuthenticatedScousGiftCardExchangeAdminAuditRoute:
       AuthenticatedScousGiftCardExchangeAdminAuditRoute,
+    AuthenticatedScousGiftCardExchangeAdminMailRoute:
+      AuthenticatedScousGiftCardExchangeAdminMailRoute,
+    AuthenticatedScousGiftCardExchangeAdminMessagesRoute:
+      AuthenticatedScousGiftCardExchangeAdminMessagesRoute,
     AuthenticatedScousGiftCardExchangeAdminRatesRoute:
       AuthenticatedScousGiftCardExchangeAdminRatesRoute,
     AuthenticatedScousGiftCardExchangeAdminTradesRoute:

@@ -19,6 +19,7 @@ type Stats = {
   members: number;
   trades_today: number;
   trades_week: number;
+  unread_messages: number;
 };
 
 function Overview() {
@@ -59,7 +60,14 @@ function Overview() {
         <Stat label="Trades this week" value={String(s?.trades_week ?? 0)} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <Link
+          to="/ScousGiftCardExchange/admin/messages"
+          className="border-border/70 bg-surface rounded-2xl border p-5"
+        >
+          <p className="font-display text-2xl font-bold">{s?.unread_messages ?? 0}</p>
+          <p className="text-muted-foreground text-xs">New messages</p>
+        </Link>
         <Link
           to="/ScousGiftCardExchange/admin/trades"
           className="border-warning/40 bg-warning/10 rounded-2xl border p-5"

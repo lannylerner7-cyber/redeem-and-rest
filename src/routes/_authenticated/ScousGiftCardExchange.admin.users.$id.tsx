@@ -22,7 +22,7 @@ function AdminUserDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, phone, created_at")
+        .select("id, full_name, email, phone, created_at, frozen_at, frozen_reason")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -103,6 +103,25 @@ function AdminUserDetail() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const setFrozen = useMutation({
+    mutationFn: async (freeze: boolean) => {
+      const { error } = await supabase.rpc("admin_set_frozen", {
+        p_user_id: id,
+        p_frozen: freeze,
+        ...(freeze && note ? { p_reason: note } : {}),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Account updated");
+      setNote("");
+      void qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const frozen = Boolean(profile.data?.frozen_at);
+
   return (
     <div className="space-y-5">
       <Link
@@ -118,6 +137,32 @@ function AdminUserDetail() {
         <p className="font-display text-money mt-4 text-3xl font-extrabold">
           {naira(wallet.data?.balance_naira ?? 0)}
         </p>
+      </section>
+
+      <section className="border-border/70 bg-surface space-y-2 rounded-2xl border p-4">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Account status</p>
+        <p className="text-sm">
+          {frozen
+            ? `Frozen — ${profile.data?.frozen_reason ?? "no reason given"}`
+            : "Active — trading and withdrawals allowed"}
+        </p>
+        <button
+          type="button"
+          disabled={setFrozen.isPending}
+          onClick={() => setFrozen.mutate(!frozen)}
+          className={
+            frozen
+              ? "bg-money-gradient text-background rounded-full px-5 py-2.5 text-xs font-bold"
+              : "border-destructive/50 text-destructive rounded-full border px-5 py-2.5 text-xs font-bold"
+          }
+        >
+          {frozen ? "Unfreeze account" : "Freeze account"}
+        </button>
+        {!frozen && (
+          <p className="text-muted-foreground text-xs">
+            The reason typed below is shown to the member when you freeze.
+          </p>
+        )}
       </section>
 
       <section className="border-border/70 bg-surface space-y-3 rounded-2xl border p-4">

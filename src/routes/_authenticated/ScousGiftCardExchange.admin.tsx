@@ -3,6 +3,8 @@ import {
   Banknote,
   ClipboardList,
   LayoutDashboard,
+  Mail,
+  MessageSquare,
   ScrollText,
   Tags,
   Users,
@@ -25,6 +27,8 @@ const NAV = [
   { to: "/ScousGiftCardExchange/admin/withdrawals", label: "Withdrawals", icon: Banknote },
   { to: "/ScousGiftCardExchange/admin/users", label: "Users", icon: Users },
   { to: "/ScousGiftCardExchange/admin/rates", label: "Market & rates", icon: Tags },
+  { to: "/ScousGiftCardExchange/admin/messages", label: "Messages", icon: MessageSquare },
+  { to: "/ScousGiftCardExchange/admin/mail", label: "Mail & alerts", icon: Mail },
   { to: "/ScousGiftCardExchange/admin/audit", label: "Audit log", icon: ScrollText },
 ] as const;
 
