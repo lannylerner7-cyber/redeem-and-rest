@@ -8,7 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { BrandLogo } from "@/components/BrandTile";
 import { naira, currencySymbol } from "@/lib/format";
 import { playTap } from "@/lib/sounds";
+import { notifyTradeSubmitted } from "@/lib/alerts.functions";
 import { cn } from "@/lib/utils";
+
+const MAX_FACE_VALUE = 5000;
 
 export const Route = createFileRoute("/_authenticated/app/trade")({
   component: TradePage,
