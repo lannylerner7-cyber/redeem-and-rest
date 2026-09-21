@@ -526,6 +526,8 @@ export type Database = {
           pin_attempts: number
           pin_locked_until: string | null
           push_enabled: boolean
+          referral_code: string | null
+          referred_by: string | null
           sound_enabled: boolean
           updated_at: string
           withdrawal_pin_hash: string | null
@@ -546,6 +548,8 @@ export type Database = {
           pin_attempts?: number
           pin_locked_until?: string | null
           push_enabled?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           sound_enabled?: boolean
           updated_at?: string
           withdrawal_pin_hash?: string | null
@@ -566,6 +570,8 @@ export type Database = {
           pin_attempts?: number
           pin_locked_until?: string | null
           push_enabled?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           sound_enabled?: boolean
           updated_at?: string
           withdrawal_pin_hash?: string | null
@@ -817,6 +823,7 @@ export type Database = {
           created_at: string
           held_naira: number
           id: string
+          locked_naira: number
           updated_at: string
           user_id: string
         }
@@ -825,6 +832,7 @@ export type Database = {
           created_at?: string
           held_naira?: number
           id?: string
+          locked_naira?: number
           updated_at?: string
           user_id: string
         }
@@ -833,6 +841,7 @@ export type Database = {
           created_at?: string
           held_naira?: number
           id?: string
+          locked_naira?: number
           updated_at?: string
           user_id?: string
         }
@@ -1062,11 +1071,16 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      lock_bonus: {
+        Args: { p_amount: number; p_note: string; p_user_id: string }
+        Returns: undefined
+      }
       pin_hash: { Args: { p_pin: string; p_user_id: string }; Returns: string }
       set_withdrawal_pin: {
         Args: { p_current_pin?: string; p_pin: string }
         Returns: boolean
       }
+      unlock_bonus: { Args: { p_user_id: string }; Returns: undefined }
       withdrawal_pin_status: { Args: never; Returns: Json }
     }
     Enums: {
