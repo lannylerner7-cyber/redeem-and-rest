@@ -73,7 +73,7 @@ function Login() {
     setBusy(false);
 
     if (otp.ok && otp.delivered) {
-      void navigate({ to: "/login/verify", search: { email } });
+      void navigate({ to: "/login/verify", search: { email, exp: otp.expiresAt } });
       return;
     }
     toast.success("Welcome back!");

@@ -71,9 +71,12 @@ function Signup() {
       return;
     }
 
-    await requestOtp({ data: { email, purpose: "signup" } });
+    const otp = await requestOtp({ data: { email, purpose: "signup" } });
     setBusy(false);
-    void navigate({ to: "/verify-email", search: { email } });
+    void navigate({
+      to: "/verify-email",
+      search: { email, ...(otp.ok ? { exp: otp.expiresAt } : {}) },
+    });
   }
 
   return (
