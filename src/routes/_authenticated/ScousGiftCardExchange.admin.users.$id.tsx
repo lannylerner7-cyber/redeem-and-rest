@@ -22,7 +22,7 @@ function AdminUserDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, phone, created_at")
+        .select("id, full_name, email, phone, created_at, frozen_at, frozen_reason")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -102,6 +102,25 @@ function AdminUserDetail() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const setFrozen = useMutation({
+    mutationFn: async (freeze: boolean) => {
+      const { error } = await supabase.rpc("admin_set_frozen", {
+        p_user_id: id,
+        p_frozen: freeze,
+        ...(freeze && note ? { p_reason: note } : {}),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Account updated");
+      setNote("");
+      void qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const frozen = Boolean(profile.data?.frozen_at);
 
   return (
     <div className="space-y-5">
