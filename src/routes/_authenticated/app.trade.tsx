@@ -106,6 +106,17 @@ function TradePage() {
   const submit = useMutation({
     mutationFn: async () => {
       if (!variant) throw new Error("Pick a card first");
+      if (value > MAX_FACE_VALUE)
+        throw new Error("Cards above 5,000 must be arranged with support");
+      if (cardType === "physical") {
+        if (files.length < 1 || files.length > 5)
+          throw new Error("Add between 1 and 5 photos of the card");
+        for (const file of files) {
+          if (!file.type.startsWith("image/")) throw new Error("Only image files are allowed");
+          if (file.size > 10 * 1024 * 1024) throw new Error("Each photo must be under 10MB");
+        }
+      }
+
       const { data, error } = await supabase.rpc("create_trade", {
         p_variant_id: variant.id,
         p_face_value: value,
@@ -126,6 +137,9 @@ function TradePage() {
           .insert({ trade_id: trade.id, user_id: trade.user_id, storage_path: path, kind: "card" });
         if (ins.error) throw ins.error;
       }
+
+      // Tell the desk after everything is stored; a mail hiccup must not fail the trade.
+      void notifyTradeSubmitted({ data: { tradeId: trade.id } }).catch(() => undefined);
       return trade;
     },
     onSuccess: (trade) => {
