@@ -139,6 +139,32 @@ function AdminUserDetail() {
         </p>
       </section>
 
+      <section className="border-border/70 bg-surface space-y-2 rounded-2xl border p-4">
+        <p className="text-muted-foreground text-xs font-semibold uppercase">Account status</p>
+        <p className="text-sm">
+          {frozen
+            ? `Frozen — ${profile.data?.frozen_reason ?? "no reason given"}`
+            : "Active — trading and withdrawals allowed"}
+        </p>
+        <button
+          type="button"
+          disabled={setFrozen.isPending}
+          onClick={() => setFrozen.mutate(!frozen)}
+          className={
+            frozen
+              ? "bg-money-gradient text-background rounded-full px-5 py-2.5 text-xs font-bold"
+              : "border-destructive/50 text-destructive rounded-full border px-5 py-2.5 text-xs font-bold"
+          }
+        >
+          {frozen ? "Unfreeze account" : "Freeze account"}
+        </button>
+        {!frozen && (
+          <p className="text-muted-foreground text-xs">
+            The reason typed below is shown to the member when you freeze.
+          </p>
+        )}
+      </section>
+
       <section className="border-border/70 bg-surface space-y-3 rounded-2xl border p-4">
         <p className="text-muted-foreground text-xs font-semibold uppercase">Manual adjustment</p>
         <input
