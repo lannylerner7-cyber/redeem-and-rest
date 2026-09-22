@@ -40,7 +40,7 @@ function Withdraw() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallets")
-        .select("balance_naira")
+        .select("balance_naira, locked_naira")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -71,7 +71,8 @@ function Withdraw() {
     },
   });
 
-  const balance = Number(wallet.data?.balance_naira ?? 0);
+  const locked = Number(wallet.data?.locked_naira ?? 0);
+  const balance = Math.max(Number(wallet.data?.balance_naira ?? 0) - locked, 0);
   const value = Number(amount || 0);
   const selected = bankId ?? banks.data?.find((b) => b.is_default)?.id ?? banks.data?.[0]?.id ?? null;
   const net = Math.max(value - WITHDRAWAL_FEE, 0);
@@ -116,8 +117,13 @@ function Withdraw() {
       )}
 
       <section className="border-border/70 bg-night-gradient rounded-3xl border p-6">
-        <p className="text-muted-foreground text-xs">Available balance</p>
+        <p className="text-muted-foreground text-xs">Available to withdraw</p>
         <p className="font-display text-money mt-1 text-3xl font-extrabold">{naira(balance)}</p>
+        {locked > 0 && (
+          <p className="text-warning mt-2 text-xs">
+            {naira(locked)} bonus stays locked until your first card is redeemed
+          </p>
+        )}
       </section>
 
       {!hasPin && !status.isLoading && (
