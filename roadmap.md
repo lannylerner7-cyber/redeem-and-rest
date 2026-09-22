@@ -109,3 +109,11 @@ Status key: [ ] not started · [~] in progress · [x] done
 - [ ] Locked (non-withdrawable) balance shown separately in wallet and admin
 - [ ] Cloudflare: D1 database + Images — see note below
 - [ ] .env / secrets fully populated: SMTP + sender identity
+
+### Phase 10 progress (22 Sep)
+- [x] Welcome bonus ₦5,000 locked until first redeemed card
+- [x] Referral codes — ₦2,000 both sides, locked until each trades
+- [x] Locked balance shown on dashboard, excluded from withdrawals
+- [x] Homepage contact form -> admin Messages + email alert
+- [ ] SMTP secrets still needed from the user before any email sends
+- [ ] Cloudflare D1 / Images — not possible on this stack; staying on Lovable Cloud
