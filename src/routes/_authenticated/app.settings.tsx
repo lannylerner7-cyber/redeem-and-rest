@@ -43,7 +43,7 @@ function Settings() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, phone")
+        .select("id, full_name, email, phone, referral_code")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -213,6 +213,28 @@ function Settings() {
         {profile.data?.phone && (
           <p className="text-muted-foreground text-xs">{profile.data.phone}</p>
         )}
+      </section>
+
+      <section className="border-primary/40 bg-primary/10 rounded-2xl border p-5">
+        <p className="text-sm font-semibold">Invite a friend</p>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Share your code — you both get ₦2,000 once you've each had a card redeemed.
+        </p>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="font-display text-primary text-xl font-extrabold tracking-[0.25em]">
+            {profile.data?.referral_code ?? "—"}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard.writeText(profile.data?.referral_code ?? "");
+              toast.success("Referral code copied");
+            }}
+            className="border-border rounded-full border px-3 py-1.5 text-xs font-semibold"
+          >
+            Copy
+          </button>
+        </div>
       </section>
 
       {pinStatus.data?.frozen && (
