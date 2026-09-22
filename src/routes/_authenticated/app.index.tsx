@@ -27,7 +27,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallets")
-        .select("balance_naira, held_naira")
+        .select("balance_naira, held_naira, locked_naira")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -78,6 +78,11 @@ function Dashboard() {
           </p>
         )}
 
+        {Number(wallet.data?.locked_naira ?? 0) > 0 && !hidden && (
+          <p className="text-warning mt-2 text-xs">
+            {naira(wallet.data?.locked_naira)} bonus locked until your first card is redeemed
+          </p>
+        )}
         {Number(wallet.data?.held_naira ?? 0) > 0 && !hidden && (
           <p className="text-muted-foreground mt-1 text-xs">
             {naira(wallet.data?.held_naira)} held for a pending withdrawal

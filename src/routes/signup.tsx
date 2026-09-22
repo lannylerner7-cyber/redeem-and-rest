@@ -31,7 +31,7 @@ export const Route = createFileRoute("/signup")({
 function Signup() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", referralCode: "" });
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -49,7 +49,11 @@ function Signup() {
       password: form.password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: form.fullName.trim(), phone: form.phone.trim() },
+        data: {
+          full_name: form.fullName.trim(),
+          phone: form.phone.trim(),
+          referral_code: form.referralCode.trim().toUpperCase(),
+        },
       },
     });
 
@@ -118,6 +122,18 @@ function Signup() {
             value={form.phone}
             onChange={set("phone")}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="referralCode">Referral code (optional)</Label>
+          <Input
+            id="referralCode"
+            placeholder="Friend's code"
+            value={form.referralCode}
+            onChange={set("referralCode")}
+          />
+          <p className="text-muted-foreground text-xs">
+            You both get ₦2,000, unlocked after your first redeemed card.
+          </p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
