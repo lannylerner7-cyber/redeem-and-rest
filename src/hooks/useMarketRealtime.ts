@@ -16,7 +16,7 @@ export function useMarketRealtime() {
       for (const key of [
         ["rates-table"],
         ["public-brands"],
-        ["public-rates"],
+        ["public-top-rates"],
         ["market-brands"],
         ["market-variants"],
         ["admin-brands"],
