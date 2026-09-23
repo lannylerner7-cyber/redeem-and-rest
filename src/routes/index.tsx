@@ -9,6 +9,7 @@ import { BrandTile, BrandTileSkeleton, type BrandLike } from "@/components/Brand
 import { ContactForm } from "@/components/ContactForm";
 import { naira } from "@/lib/format";
 import heroCards from "@/assets/hero-cards.jpg";
+import { useMarketRealtime } from "@/hooks/useMarketRealtime";
 
 
 export const Route = createFileRoute("/")({
@@ -83,6 +84,7 @@ function useTopRates() {
 }
 
 function Home() {
+  useMarketRealtime();
   const brands = useBrands();
   const banners = useBanners();
   const rates = useTopRates();

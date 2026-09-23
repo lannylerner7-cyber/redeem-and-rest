@@ -6,6 +6,7 @@ import { PublicFooter, PublicHeader } from "@/components/PublicHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { naira } from "@/lib/format";
 import { BrandLogo } from "@/components/BrandTile";
+import { useMarketRealtime } from "@/hooks/useMarketRealtime";
 
 export const Route = createFileRoute("/rates")({
   head: () => ({
@@ -36,6 +37,7 @@ type Row = {
 };
 
 function Rates() {
+  useMarketRealtime();
   const [query, setQuery] = useState("");
 
   const { data, isLoading } = useQuery({

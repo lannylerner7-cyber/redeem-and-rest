@@ -10,6 +10,7 @@ import { naira, currencySymbol } from "@/lib/format";
 import { playTap } from "@/lib/sounds";
 import { notifyTradeSubmitted } from "@/lib/alerts.functions";
 import { cn } from "@/lib/utils";
+import { useMarketRealtime } from "@/hooks/useMarketRealtime";
 
 const MAX_FACE_VALUE = 5000;
 
@@ -44,6 +45,7 @@ type Variant = {
 const STEPS = ["Card", "Region", "Type", "Amount", "Proof"] as const;
 
 function TradePage() {
+  useMarketRealtime();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [brand, setBrand] = useState<Brand | null>(null);
