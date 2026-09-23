@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandLogo } from "@/components/BrandTile";
 import { cn } from "@/lib/utils";
+import { useMarketRealtime } from "@/hooks/useMarketRealtime";
 
 export const Route = createFileRoute("/_authenticated/ScousGiftCardExchange/admin/rates")({
   component: AdminRates,
@@ -21,6 +22,7 @@ type Brand = {
 };
 
 function AdminRates() {
+  useMarketRealtime();
   const qc = useQueryClient();
   const [brandId, setBrandId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, string>>({});
