@@ -78,7 +78,7 @@ function Signup() {
     }
 
     const otp = await requestOtp({ data: { email, purpose: "signup" } });
-    if (otp.ok && otp.delivered) markOtpPending(email);
+    if (!(otp.ok && !otp.delivered && !otp.emailConfigured)) markOtpPending(email);
     setBusy(false);
     void navigate({
       to: "/verify-email",
