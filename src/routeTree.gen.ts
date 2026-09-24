@@ -21,7 +21,7 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
-import { Route as LoginVerifyRouteImport } from './routes/login.verify'
+import { Route as LoginVerifyRouteImport } from './routes/login_.verify'
 import { Route as AuthenticatedScousGiftCardExchangeAdminRouteImport } from './routes/_authenticated/ScousGiftCardExchange.admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAppChatRouteImport } from './routes/_authenticated/app.chat'
@@ -103,9 +103,9 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const LoginVerifyRoute = LoginVerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
-  getParentRoute: () => LoginRoute,
+  id: '/login_/verify',
+  path: '/login/verify',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedScousGiftCardExchangeAdminRoute =
   AuthenticatedScousGiftCardExchangeAdminRouteImport.update({
@@ -227,7 +227,7 @@ const AuthenticatedScousGiftCardExchangeAdminUsersIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -261,7 +261,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -294,7 +294,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -303,7 +303,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
-  '/login/verify': typeof LoginVerifyRoute
+  '/login_/verify': typeof LoginVerifyRoute
   '/_authenticated/ScousGiftCardExchange/admin': typeof AuthenticatedScousGiftCardExchangeAdminRouteWithChildren
   '/_authenticated/app/chat': typeof AuthenticatedAppChatRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRouteWithChildren
@@ -405,7 +405,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verify-email'
     | '/_authenticated/app'
-    | '/login/verify'
+    | '/login_/verify'
     | '/_authenticated/ScousGiftCardExchange/admin'
     | '/_authenticated/app/chat'
     | '/_authenticated/app/history'
@@ -432,7 +432,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  LoginRoute: typeof LoginRouteWithChildren
+  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   RatesRoute: typeof RatesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -440,6 +440,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  LoginVerifyRoute: typeof LoginVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -528,12 +529,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/login/verify': {
-      id: '/login/verify'
-      path: '/verify'
+    '/login_/verify': {
+      id: '/login_/verify'
+      path: '/login/verify'
       fullPath: '/login/verify'
       preLoaderRoute: typeof LoginVerifyRouteImport
-      parentRoute: typeof LoginRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/ScousGiftCardExchange/admin': {
       id: '/_authenticated/ScousGiftCardExchange/admin'
@@ -797,21 +798,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface LoginRouteChildren {
-  LoginVerifyRoute: typeof LoginVerifyRoute
-}
-
-const LoginRouteChildren: LoginRouteChildren = {
-  LoginVerifyRoute: LoginVerifyRoute,
-}
-
-const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  LoginRoute: LoginRouteWithChildren,
+  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   RatesRoute: RatesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -819,6 +810,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  LoginVerifyRoute: LoginVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
