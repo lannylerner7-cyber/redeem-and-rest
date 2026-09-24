@@ -10,6 +10,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { loginGate, recordLoginAttempt, requestOtp } from "@/lib/auth.functions";
+import { clearOtpPending, markOtpPending } from "@/lib/otp-gate";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -72,10 +73,19 @@ function Login() {
     const otp = await requestOtp({ data: { email, purpose: "login" } });
     setBusy(false);
 
-    if (otp.ok && otp.delivered) {
-      void navigate({ to: "/login/verify", search: { email, exp: otp.expiresAt } });
+    // A code is outstanding whenever mail is working - including when the
+    // request was refused because one was just sent. Only a mailbox we cannot
+    // reach at all lets the member straight in.
+    const skipCode = otp.ok && !otp.delivered && !otp.emailConfigured;
+    if (!skipCode) {
+      markOtpPending(email);
+      void navigate({
+        to: "/login/verify",
+        search: { email, ...(otp.ok ? { exp: otp.expiresAt } : {}) },
+      });
       return;
     }
+    clearOtpPending();
     toast.success("Welcome back!");
     void navigate({ to: "/app" });
   }
