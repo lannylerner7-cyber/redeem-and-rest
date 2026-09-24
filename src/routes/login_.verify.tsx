@@ -6,7 +6,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { OtpForm } from "@/components/OtpForm";
 import { clearOtpPending } from "@/lib/otp-gate";
 
-export const Route = createFileRoute("/login/verify")({
+export const Route = createFileRoute("/login_/verify")({
   validateSearch: z.object({ email: z.string().email().optional(), exp: z.string().optional() }),
   head: () => ({
     meta: [
