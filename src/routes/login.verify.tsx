@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { AuthShell } from "@/components/AuthShell";
 import { OtpForm } from "@/components/OtpForm";
+import { clearOtpPending } from "@/lib/otp-gate";
 
 export const Route = createFileRoute("/login/verify")({
   validateSearch: z.object({ email: z.string().email().optional(), exp: z.string().optional() }),
@@ -47,6 +48,7 @@ function LoginVerify() {
         purpose="login"
         expiresAt={exp ?? null}
         onVerified={() => {
+          clearOtpPending();
           toast.success("Welcome back!");
           void navigate({ to: "/app" });
         }}

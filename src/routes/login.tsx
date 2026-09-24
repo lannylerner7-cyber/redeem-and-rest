@@ -10,6 +10,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { loginGate, recordLoginAttempt, requestOtp } from "@/lib/auth.functions";
+import { clearOtpPending, markOtpPending } from "@/lib/otp-gate";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -73,9 +74,11 @@ function Login() {
     setBusy(false);
 
     if (otp.ok && otp.delivered) {
+      markOtpPending(email);
       void navigate({ to: "/login/verify", search: { email, exp: otp.expiresAt } });
       return;
     }
+    clearOtpPending();
     toast.success("Welcome back!");
     void navigate({ to: "/app" });
   }
