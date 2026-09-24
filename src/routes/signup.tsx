@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+import { clearOtpPending, markOtpPending } from "@/lib/otp-gate";
 import { AuthShell } from "@/components/AuthShell";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -69,6 +70,7 @@ function Signup() {
 
     const done = await completeSignup({ data: { email, fullName: form.fullName.trim() } });
     if (done.verifiedWithoutEmail) {
+      clearOtpPending();
       setBusy(false);
       toast.success("Account created. Welcome aboard!");
       void navigate({ to: "/app" });
@@ -76,6 +78,7 @@ function Signup() {
     }
 
     const otp = await requestOtp({ data: { email, purpose: "signup" } });
+    if (otp.ok && otp.delivered) markOtpPending(email);
     setBusy(false);
     void navigate({
       to: "/verify-email",

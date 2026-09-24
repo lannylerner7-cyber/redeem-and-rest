@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { AuthShell } from "@/components/AuthShell";
 import { OtpForm } from "@/components/OtpForm";
+import { clearOtpPending } from "@/lib/otp-gate";
 
 export const Route = createFileRoute("/verify-email")({
   validateSearch: z.object({ email: z.string().email().optional(), exp: z.string().optional() }),
@@ -44,6 +45,7 @@ function VerifyEmail() {
         purpose="signup"
         expiresAt={exp ?? null}
         onVerified={() => {
+          clearOtpPending();
           toast.success("Email verified. Welcome aboard!");
           void navigate({ to: "/app" });
         }}
